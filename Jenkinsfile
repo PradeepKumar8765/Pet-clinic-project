@@ -11,12 +11,13 @@ pipeline {
         DOCKER_IMAGE = "pradeep82kumar/sprint-petclinic:${BUILD_NUMBER}" // Docker image with tag
     }
     stages {
-        stage('Checkout') {
-            steps {
-                echo 'Checking out code'
-                checkout scm
-            }
+      stage('Checkout') {
+        steps {
+          sh 'echo passed'
+          git branch: 'main', url: 'https://github.com/PradeepKumar8765/Pet-clinic-project.git'
+          sh 'checked out'
         }
+      }
         stage('Build and Test') {
             steps {
                 echo 'Building and testing the project'
@@ -52,8 +53,8 @@ pipeline {
         }
         stage('Update Deployment File') {
             environment {
-                GIT_REPO_NAME = "Pet-clinic-project" // GitHub repo name
-                GIT_USER_NAME = "PradeepKumar8765"  // GitHub username
+                GIT_REPO_NAME = "Pet-clinic-project" 
+                GIT_USER_NAME = "PradeepKumar8765"  
             }
             steps {
                 echo 'Updating Kubernetes deployment file'
