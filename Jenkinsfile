@@ -16,7 +16,7 @@ pipeline {
       steps {
         sh 'ls -ltr'
         // build the project and create a JAR file
-        sh 'mvn clean package -DskipTests'
+        sh 'mvn clean package -DskipTests=true'
       }
     }
     stage('Static Code Analysis') {
@@ -24,7 +24,7 @@ pipeline {
         SONAR_URL = "http://http://52.91.55.184:9000"
       }
       steps {
-        withCredentials([string(credentialsId: 'Sonar', variable: 'SONAR_AUTH_TOKEN')]) {
+        withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
           sh 'mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
         }
       }
