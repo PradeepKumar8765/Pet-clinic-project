@@ -21,7 +21,7 @@ pipeline {
     }
     stage('Static Code Analysis') {
       environment {
-        SONAR_URL = "http://"
+        SONAR_URL = "http://http://52.91.55.184:9000"
       }
       steps {
         withCredentials([string(credentialsId: 'Sonar', variable: 'SONAR_AUTH_TOKEN')]) {
@@ -46,7 +46,7 @@ pipeline {
     }
     stage('Update Deployment File') {
         environment {
-            GIT_REPO_NAME = ""
+            GIT_REPO_NAME = "Pet-clinic-project"
             GIT_USER_NAME = "PradeepKumar8765"
         }
         steps {
