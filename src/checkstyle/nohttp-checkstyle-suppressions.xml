@@ -4,7 +4,6 @@
 		"https://checkstyle.org/dtds/suppressions_1_2.dtd">
 <suppressions>
 	<suppress files="node_modules[\\/].*" checks=".*"/>
-	<suppress files="JenkinsFile" checks="NoHttp"/>
 	<suppress files="node[\\/].*" checks=".*"/>
 	<suppress files="build[\\/].*" checks=".*"/>
 	<suppress files="target[\\/].*" checks=".*"/>
