@@ -3,7 +3,7 @@ pipeline {
         docker {
             // Use a Docker image for the build and test environment
             image 'pxdonthala/mavdocim:latest'
-            args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
+            args '--user root -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/workspace'
         }
     }
     environment {
@@ -11,13 +11,15 @@ pipeline {
         DOCKER_IMAGE = "pradeep82kumar/sprint-petclinic:${BUILD_NUMBER}" // Docker image with tag
     }
     stages {
-      stage('Checkout') {
-        steps {
-          sh 'echo passed'
-          git branch: 'main', url: 'https://github.com/PradeepKumar8765/Pet-clinic-project.git'
-          echo 'checked out'
+        stage('Checkout') {
+            steps {
+                echo 'Cloning the repository'
+                dir('/workspace') {
+                    git branch: 'main', url: 'https://github.com/PradeepKumar8765/Pet-clinic-project.git'
+                }
+                echo 'Checked out repository'
+            }
         }
-      }
         stage('Build and Test') {
             steps {
                 echo 'Building and testing the project'
@@ -59,18 +61,20 @@ pipeline {
             steps {
                 echo 'Updating Kubernetes deployment file'
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                    sh '''
-                        git config user.email "suhaasq@gmail.com"
-                        git config user.name "PradeepKumar8765"
-                        
-                        # Update the deployment file with the new image tag
-                        sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" k8s/deployment.yml
-                        
-                        # Commit and push the changes
-                        git add k8s/deployment.yml
-                        git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                        git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                    '''
+                    dir('/workspace') {
+                        sh '''
+                            git config user.email "suhaasq@gmail.com"
+                            git config user.name "PradeepKumar8765"
+                            
+                            # Update the deployment file with the new image tag
+                            sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" k8s/deployment.yml
+                            
+                            # Commit and push the changes
+                            git add k8s/deployment.yml
+                            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                        '''
+                    }
                 }
             }
         }
@@ -87,4 +91,3 @@ pipeline {
         }
     }
 }
-
