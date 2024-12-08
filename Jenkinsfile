@@ -1,21 +1,21 @@
 pipeline {
   agent {
     docker {
-      // Select a Docker image to run the below build, test on- Agent or VM
       image 'pxdonthala/mavdocim:latest'
-      args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
+      args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
   stages {
     stage('Checkout') {
       steps {
+        // Add explicit checkout step
+        checkout scm
         sh 'echo passed'
       }
     }
     stage('Build and Test') {
       steps {
         sh 'ls -ltr'
-        // build the project and create a JAR file
         sh 'mvn clean package -DskipTests=true'
       }
     }
@@ -36,32 +36,46 @@ pipeline {
       }
       steps {
         script {
-            sh 'docker build -t ${DOCKER_IMAGE} .'
-            def dockerImage = docker.image("${DOCKER_IMAGE}")
-            docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
-                dockerImage.push()
-            }
+          sh 'docker build -t ${DOCKER_IMAGE} .'
+          def dockerImage = docker.image("${DOCKER_IMAGE}")
+          docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
+            dockerImage.push()
+          }
         }
       }
     }
     stage('Update Deployment File') {
-        environment {
-            GIT_REPO_NAME = "Pet-clinic-project"
-            GIT_USER_NAME = "PradeepKumar8765"
+      environment {
+        GIT_REPO_NAME = "Pet-clinic-project"
+        GIT_USER_NAME = "PradeepKumar8765"
+        GITHUB_TOKEN = credentials('github')
+      }
+      steps {
+        // Ensure we're in the right directory
+        dir("${WORKSPACE}") {
+          // Configure Git with safe directory
+          sh 'git config --global --add safe.directory "${WORKSPACE}"'
+          
+          // Configure Git credentials
+          sh '''
+            git config user.email "suhaasq@gmail.com"
+            git config user.name "PradeepKumar8765"
+            
+            # Ensure we're on the main branch and up to date
+            git fetch origin
+            git checkout main
+            git pull origin main
+            
+            # Make the changes
+            sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" k8s/deployment.yml
+            
+            # Stage, commit and push changes
+            git add k8s/deployment.yml
+            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+          '''
         }
-        steps {
-            withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                sh '''
-                    git config user.email "suhaasq@gmail.com"
-                    git config user.name "PradeepKumar8765"
-                    BUILD_NUMBER=${BUILD_NUMBER}
-                    sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" k8s/deployment.yml
-                    git add k8s/deployment.yml
-                    git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                    git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                '''
-            }
-        }
-    }    
+      }
+    }
   }
 }
