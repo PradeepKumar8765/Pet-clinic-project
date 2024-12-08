@@ -3,7 +3,7 @@ pipeline {
         docker {
             // Use a Docker image for the build and test environment
             image 'pxdonthala/mavdocim:latest'
-            args '--user root -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/workspace'
+            args '--user root -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/jenkins/workspace/pet-clinic:/workspace'
         }
     }
     environment {
@@ -66,6 +66,7 @@ pipeline {
                             git config user.email "suhaasq@gmail.com"
                             git config user.name "PradeepKumar8765"
                             
+
                             # Update the deployment file with the new image tag
                             sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" k8s/deployment.yml
                             
