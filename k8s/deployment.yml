@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: workload
-          image: pradeep82kumar/sprint-petclinic:replaceImageTag
+          image: pradeep82kumar/sprint-petclinic:1
           ports:
             - name: http
               containerPort: 8080
