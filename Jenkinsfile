@@ -15,7 +15,7 @@ pipeline {
         steps {
           sh 'echo passed'
           git branch: 'main', url: 'https://github.com/PradeepKumar8765/Pet-clinic-project.git'
-          sh 'checked out'
+          echo 'checked out'
         }
       }
         stage('Build and Test') {
